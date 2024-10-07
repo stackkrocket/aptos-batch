@@ -22,6 +22,8 @@ import {
   const privateKeyString = ""; // Replace with your private key here
   const privateKey = new Ed25519PrivateKey(privateKeyString);
   const sender = Account.fromPrivateKey({ privateKey });
+
+  console.log("New build")
   
   
   // Hardcoded recipient address
