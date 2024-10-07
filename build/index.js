@@ -17,7 +17,7 @@ const APTOS_NETWORK = ts_sdk_1.NetworkToNetworkName[(_a = process.env.APTOS_NETW
 const config = new ts_sdk_1.AptosConfig({ network: APTOS_NETWORK });
 const aptos = new ts_sdk_1.Aptos(config);
 // Hardcoded private key of the sender
-const privateKeyString = "0x6516f098207679ee4259ee7d072e6dfeb7de04749b79612468d2813e8f1d4e0f"; // Replace with your private key here
+const privateKeyString = ""; // Replace with your private key here
 const privateKey = new ts_sdk_1.Ed25519PrivateKey(privateKeyString);
 const sender = ts_sdk_1.Account.fromPrivateKey({ privateKey });
 console.log("New build");

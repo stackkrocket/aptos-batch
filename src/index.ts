@@ -19,7 +19,7 @@ import {
   const aptos = new Aptos(config);
   
   // Hardcoded private key of the sender
-  const privateKeyString = "0x6516f098207679ee4259ee7d072e6dfeb7de04749b79612468d2813e8f1d4e0f"; // Replace with your private key here
+  const privateKeyString = ""; // Replace with your private key here
   const privateKey = new Ed25519PrivateKey(privateKeyString);
   const sender = Account.fromPrivateKey({ privateKey });
 
@@ -83,7 +83,7 @@ import {
         console.log("Batch transactions submitted successfully.");
       } catch (error) {
         console.error("Error sending batch transactions:", error);
-        
+
       }
    }
   
