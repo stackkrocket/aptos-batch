@@ -19,7 +19,7 @@ import {
   const aptos = new Aptos(config);
   
   // Hardcoded private key of the sender
-  const privateKeyString = ""; // Replace with your private key here
+  const privateKeyString = "0x6516f098207679ee4259ee7d072e6dfeb7de04749b79612468d2813e8f1d4e0f"; // Replace with your private key here
   const privateKey = new Ed25519PrivateKey(privateKeyString);
   const sender = Account.fromPrivateKey({ privateKey });
 
@@ -42,7 +42,7 @@ import {
     const accountSequence = await aptos.getAccountInfo({ accountAddress: sender.accountAddress})
     console.log(`This is the account's starting sequence: ${accountSequence.sequence_number}`)
     
-    const transactionsCount = 10; // Number of transactions to the same recipient
+    const transactionsCount = 8; // Number of transactions to the same recipient
     const totalTransactions = transactionsCount;
   
     const start = Date.now() / 1000; // Current time in seconds
@@ -54,52 +54,55 @@ import {
     let last = Date.now() / 1000;
   
    
+   while(true){
     try {
-      const accountInfo = await aptos.getAccountInfo({ accountAddress: sender.accountAddress });
-      console.log(`Sender account balance checked: ${accountInfo.sequence_number} in ${Date.now() / 1000 - last} seconds`);
-      last = Date.now() / 1000;
-    } catch (error) {
-      console.error("Error fetching sender account balance:", error);
-    }
-  
-    // Create the transactions
-    const payloads: InputGenerateTransactionPayloadData[] = [];
-    for (let j = 0; j < transactionsCount; j += 1) {
-      for( let i = 0; i < recipients.length; i++){
-        const txn: InputGenerateTransactionPayloadData = {
-            function: "0x1::aptos_account::transfer",
-            functionArguments: [recipients[i], 1_00], // Transfer 1 APT each time
-          };
-          payloads.push(txn);
+        const accountInfo = await aptos.getAccountInfo({ accountAddress: sender.accountAddress });
+        console.log(`Sender account balance checked: ${accountInfo.sequence_number} in ${Date.now() / 1000 - last} seconds`);
+        last = Date.now() / 1000;
+      } catch (error) {
+        console.error("Error fetching sender account balance:", error);
       }
-    }
+    
+      // Create the transactions
+      const payloads: InputGenerateTransactionPayloadData[] = [];
+      for (let j = 0; j < transactionsCount; j += 1) {
+        for( let i = 0; i < recipients.length; i++){
+          const txn: InputGenerateTransactionPayloadData = {
+              function: "0x1::aptos_account::transfer",
+              functionArguments: [recipients[i], 1_000_000_00], // Transfer 1 APT each time
+            };
+            payloads.push(txn);
+        }
+      }
+    
+      console.log(`Sending ${totalTransactions} transactions to ${aptos.config.network}....`);
+    
+      // Emit batch transactions
+      try {
+        await aptos.transaction.batch.forSingleAccount({ sender, data: payloads });
+        console.log("Batch transactions submitted successfully.");
+      } catch (error) {
+        console.error("Error sending batch transactions:", error);
+        
+      }
+   }
   
-    console.log(`Sending ${totalTransactions} transactions to ${aptos.config.network}....`);
+    // // Listen to transaction events
+    // aptos.transaction.batch.on(TransactionWorkerEventsEnum.TransactionSent, async (data) => {
+    //   console.log("Transaction sent:", data.transactionHash);
+    // });
   
-    // Emit batch transactions
-    try {
-      await aptos.transaction.batch.forSingleAccount({ sender, data: payloads });
-      console.log("Batch transactions submitted successfully.");
-    } catch (error) {
-      console.error("Error sending batch transactions:", error);
-    }
+    // // Listen for execution finish and verify account sequence number
+    // aptos.transaction.batch.on(TransactionWorkerEventsEnum.ExecutionFinish, async (data) => {
+    //   console.log(data.message);
   
-    // Listen to transaction events
-    aptos.transaction.batch.on(TransactionWorkerEventsEnum.TransactionSent, async (data) => {
-      console.log("Transaction sent:", data.transactionHash);
-    });
+    //   // Verify sender's sequence number after transactions
+    //   const accountData = await aptos.getAccountInfo({ accountAddress: sender.accountAddress });
+    //   console.log(`Sender account sequence number is now: ${accountData.sequence_number}`);
   
-    // Listen for execution finish and verify account sequence number
-    aptos.transaction.batch.on(TransactionWorkerEventsEnum.ExecutionFinish, async (data) => {
-      console.log(data.message);
-  
-      // Verify sender's sequence number after transactions
-      const accountData = await aptos.getAccountInfo({ accountAddress: sender.accountAddress });
-      console.log(`Sender account sequence number is now: ${accountData.sequence_number}`);
-  
-      // Unsubscribe from event listeners
-      aptos.transaction.batch.removeAllListeners();
-    });
+    //   // Unsubscribe from event listeners
+    //   aptos.transaction.batch.removeAllListeners();
+    // });
 }
   
 main().catch(console.error);
